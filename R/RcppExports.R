@@ -3,14 +3,14 @@
 
 #' Simon's two-stage rules 
 #' @export
-bacSimonSingle <- function(y, n1, r1, n, r, bsize) {
-    .Call(`_basim_bacSimonSingle`, y, n1, r1, n, r, bsize)
+bacSimonSingle <- function(y, n1, r1, n, r, bsize, rst) {
+    invisible(.Call(`_basim_bacSimonSingle`, y, n1, r1, n, r, bsize, rst))
 }
 
 #' Search r1 and r given n1 and n
 #' @export
-bacSimonSearchR <- function(y0, y1, n1, n, bsize, alpha, beta) {
-    .Call(`_basim_bacSimonSearchR`, y0, y1, n1, n, bsize, alpha, beta)
+bacSimonSearchR <- function(y0, y1, n1, n, bsize, alpha, beta, optimal) {
+    invisible(.Call(`_basim_bacSimonSearchR`, y0, y1, n1, n, bsize, alpha, beta, optimal))
 }
 
 #' Simon's two-stage design 

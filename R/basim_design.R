@@ -6,7 +6,8 @@
 #'
 baGetDesign  <- function(par.design, lst.setting = NULL, design = c("simon", "truth", "betabinom"),
                          f.simu = baSimuTcell, rho = NULL, adj.rho = 1, bsize = 1,
-                         nmin = 10, nmax = 100, nreps = 10000, ...) {
+                         nmin = 10, nmax = 100, nreps = 10000, inx.design = NA, inx.setting = NA,
+                         ...) {
 
     f.dta <- function(rst, ...) {
         data.frame(r1     = rst[1],
@@ -15,6 +16,8 @@ baGetDesign  <- function(par.design, lst.setting = NULL, design = c("simon", "tr
                    n      = rst[4],
                    en     = rst[5],
                    pet    = rst[6],
+                   dinx   = inx.design,
+                   sinx   = inx.setting,
                    ...);
     }
 
@@ -34,7 +37,7 @@ baGetDesign  <- function(par.design, lst.setting = NULL, design = c("simon", "tr
 
     } else {
         cur.icc <- lst.setting$icc;
-        bsizes  <- rep(bsize, (ceiling(nmax/bsize)+2)*bsize);
+        bsizes  <- rep(bsize, ceiling(nmax/bsize)+2);
 
         if ("betabinom" == design) {
             if (is.null(rho)) {
@@ -51,7 +54,6 @@ baGetDesign  <- function(par.design, lst.setting = NULL, design = c("simon", "tr
             yp1 <- t(yp1);
 
             rst <- bacSimonDesign(yp0, yp1, nmax, nmin, bsize, par.design$ALPHA, 1-par.design$POWER);
-
             rst <- f.dta(rst[1,],
                          design = design,
                          rhoadj = adj.rho,

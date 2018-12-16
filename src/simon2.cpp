@@ -7,13 +7,13 @@ using namespace Rcpp;
 //' Simon's two-stage rules 
 //' @export
 // [[Rcpp::export]]
-NumericVector bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize) {
+void bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize, NumericVector rst) {
 
-  NumericVector rst = NumericVector::create(_["nres"]  = 0.0,
-                                            _["nenr"]  = 0.0,
-                                            _["mean"]  = 0.0,
-                                            _["earl"]  = 0.0,
-                                            _["rej"]   = 0.0);
+  // NumericVector rst = NumericVector::create(_["nres"]  = 0.0,
+  //                                           _["nenr"]  = 0.0,
+  //                                           _["mean"]  = 0.0,
+  //                                           _["earl"]  = 0.0,
+  //                                           _["rej"]   = 0.0);
 
   int rep, i, sy, inx;
 
@@ -35,11 +35,11 @@ NumericVector bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int 
       }
     }
 
-    rst[0] += sy;
-    rst[1] += i;
-    rst[2] += 1.0 * sy / i;
-    rst[3] += (i == n1);
-    rst[4] += (sy > r);
+    rst(0) += sy;
+    rst(1) += i;
+    rst(2) += 1.0 * sy / i;
+    rst(3) += (i == n1);
+    rst(4) += (sy > r);
   }
 
   //summary
@@ -47,60 +47,12 @@ NumericVector bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int 
     rst[i] /= y.nrow();
   } 
 
-  return(rst);
-}
-
-NumericMatrix tlSetVis(NumericMatrix visited, int i, int j, int nr, int nc,
-                       double rej0, double rej1, double alpha, double beta) {
-
-  NumericMatrix rst(visited);
-  int l, m;
-
-  //current visited
-  rst(i,j) = 1;
-
-  if (round(rej0*1000)/1000 > alpha) {
-    for (l = 0; l <= i; l++) {
-      for (m = 0; m <= j; m++) {
-        rst(l,m) = 1;
-      }
-    }
-  }
-
-  if (round(rej1*1000)/1000 < 1-beta) {
-    for (l = i; l < nr; l++) {
-      for (m = j; m < nc; m++) {
-        rst(l,m) = 1;
-      }
-    }
-  }
-
-  return(rst);
-}
-
-NumericVector tlSetOpt(NumericVector optimal, NumericVector cp0, NumericVector cp1,
-                       int i, int j, double alpha, double beta) {
-
-  NumericVector rst(optimal);
-
-  if (round(cp0["rej"]*1000)/1000 <= alpha  &
-      round(cp1["rej"]*1000)/1000 >= 1-beta &
-      cp0["nenr"] < optimal(0)) {
-
-    rst(0) = cp0["nenr"];
-    rst(1) = cp0["earl"];
-    rst(2) = cp0["rej"];
-    rst(3) = cp1["rej"];
-    rst(4) = i;
-    rst(5) = i+j;
-  }
-
-  return(rst);
+  //return(rst);
 }
 
 void tlSetVisOpt(int i, int j, NumericMatrix visited, NumericVector optimal,
                  NumericMatrix y0, NumericMatrix y1, int n1, int n, int bsize,
-                 double alpha, double beta) {
+                 double alpha, double beta, NumericVector cp0, NumericVector cp1) {
 
   if (1 == visited(i,j))
     return;
@@ -108,14 +60,15 @@ void tlSetVisOpt(int i, int j, NumericMatrix visited, NumericVector optimal,
   // visit current
   visited(i,j) = 1;
 
-  NumericVector cp0, cp1;
   double        rej0, rej1;
   int           l, m;
 
-  cp0  = bacSimonSingle(y0, n1, i, n, i+j, bsize);
-  cp1  = bacSimonSingle(y1, n1, i, n, i+j, bsize);
+  bacSimonSingle(y0, n1, i, n, i+j, bsize, cp0);
+  bacSimonSingle(y1, n1, i, n, i+j, bsize, cp1);
   rej0 = round(cp0["rej"]*1000)/1000;
   rej1 = round(cp1["rej"]*1000)/1000;
+
+  //Rcout << i << ":" << j << "--" << rej0 << "-" << rej1 << "\n";
 
   if (rej0 > alpha) {
     for (l = 0; l <= i; l++) {
@@ -148,11 +101,15 @@ void tlSetVisOpt(int i, int j, NumericMatrix visited, NumericVector optimal,
 //' Search r1 and r given n1 and n
 //' @export
 // [[Rcpp::export]]
-NumericVector bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
-                              int bsize, double alpha, double beta) {
+void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
+                     int bsize, double alpha, double beta, NumericVector optimal) {
 
-  NumericVector optimal(6, 999999.0);
-  NumericVector cp0(5), cp1(5);
+  NumericVector cp0 = NumericVector::create(_["nres"]  = 0.0,
+                                            _["nenr"]  = 0.0,
+                                            _["mean"]  = 0.0,
+                                            _["earl"]  = 0.0,
+                                            _["rej"]   = 0.0);
+  NumericVector cp1 = clone(cp0); 
   int           i, j, k, n2 = n-n1;
 
   NumericMatrix visited(n1+1, n2+1);
@@ -160,24 +117,24 @@ NumericVector bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
   //initial visited
   std::fill(visited.begin(), visited.end(), 0);
 
-  // diagonal only 
-  // Rf_PrintValue(diagij);
-
-  for (k = 0; k < fmin(n1+1, n2+1); k++) {
-    tlSetVisOpt(k,    k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta);
-    tlSetVisOpt(n1-k, n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta);
-    tlSetVisOpt(n1-k, k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta);
-    tlSetVisOpt(k,    n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta);
+  for (k = 0; k < fmin(n1+1, n2+1); k = k+2) {
+    tlSetVisOpt(k,    k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt(n1-k, n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt(n1-k, k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt(k,    n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
   }
 
+
+  //Rf_PrintValue(visited);
+
   // all combinations
-  for (i = 0; i < n1+1; i++) {
-    for (j = 0; j < n2+1; j++) {
-      tlSetVisOpt(i, j, visited, optimal, y0, y1, n1, n, bsize, alpha, beta);
+  for (i = n1; i >= 0; i--) {
+    for (j = n2; j >= 0; j--) {
+      tlSetVisOpt(i, j, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
     }
   }
 
-  return(optimal);
+  //Rf_PrintValue(optimal);
 }
 
 
@@ -188,16 +145,22 @@ NumericMatrix bacSimonDesign(NumericMatrix y0, NumericMatrix y1, int nmax, int n
                              int bsize, double alpha, double beta) {
 
   NumericMatrix rst(2, 8);
-  NumericVector optimal;
+  NumericVector optimal(6, 999999.0);
 
   //initial 
   std::fill(rst.begin(), rst.end(), 999999.0);
 
-  int n1, n;
-  for (n = nmin; n <= nmax; n++) {
+  int n1, n, step = 5;
+  for (n = nmin; n <= nmax; n = n+step) {
     Rcout << "n = " << n << "\n";
     for (n1 = 5; n1 < n-1; n1++) {
-      optimal = bacSimonSearchR(y0, y1, n1, n, bsize, alpha, beta);
+      bacSimonSearchR(y0, y1, n1, n, bsize, alpha, beta, optimal);
+
+      //accelerated n
+      if (step > 1 & optimal[0] < 999999) {
+        n    = n - step;
+        step = 1;
+      }
 
       if (optimal(0) < rst(0,4)) {
         rst(0,0) = optimal(4);

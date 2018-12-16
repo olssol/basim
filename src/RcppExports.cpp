@@ -6,10 +6,9 @@
 using namespace Rcpp;
 
 // bacSimonSingle
-NumericVector bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize);
-RcppExport SEXP _basim_bacSimonSingle(SEXP ySEXP, SEXP n1SEXP, SEXP r1SEXP, SEXP nSEXP, SEXP rSEXP, SEXP bsizeSEXP) {
+void bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize, NumericVector rst);
+RcppExport SEXP _basim_bacSimonSingle(SEXP ySEXP, SEXP n1SEXP, SEXP r1SEXP, SEXP nSEXP, SEXP rSEXP, SEXP bsizeSEXP, SEXP rstSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
     Rcpp::traits::input_parameter< int >::type n1(n1SEXP);
@@ -17,15 +16,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type r(rSEXP);
     Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(bacSimonSingle(y, n1, r1, n, r, bsize));
-    return rcpp_result_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type rst(rstSEXP);
+    bacSimonSingle(y, n1, r1, n, r, bsize, rst);
+    return R_NilValue;
 END_RCPP
 }
 // bacSimonSearchR
-NumericVector bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n, int bsize, double alpha, double beta);
-RcppExport SEXP _basim_bacSimonSearchR(SEXP y0SEXP, SEXP y1SEXP, SEXP n1SEXP, SEXP nSEXP, SEXP bsizeSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
+void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n, int bsize, double alpha, double beta, NumericVector optimal);
+RcppExport SEXP _basim_bacSimonSearchR(SEXP y0SEXP, SEXP y1SEXP, SEXP n1SEXP, SEXP nSEXP, SEXP bsizeSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP optimalSEXP) {
 BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type y0(y0SEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type y1(y1SEXP);
@@ -34,8 +33,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(bacSimonSearchR(y0, y1, n1, n, bsize, alpha, beta));
-    return rcpp_result_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type optimal(optimalSEXP);
+    bacSimonSearchR(y0, y1, n1, n, bsize, alpha, beta, optimal);
+    return R_NilValue;
 END_RCPP
 }
 // bacSimonDesign
@@ -69,8 +69,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_basim_bacSimonSingle", (DL_FUNC) &_basim_bacSimonSingle, 6},
-    {"_basim_bacSimonSearchR", (DL_FUNC) &_basim_bacSimonSearchR, 7},
+    {"_basim_bacSimonSingle", (DL_FUNC) &_basim_bacSimonSingle, 7},
+    {"_basim_bacSimonSearchR", (DL_FUNC) &_basim_bacSimonSearchR, 8},
     {"_basim_bacSimonDesign", (DL_FUNC) &_basim_bacSimonDesign, 7},
     {"_basim_bacICC", (DL_FUNC) &_basim_bacICC, 2},
     {NULL, NULL, 0}
