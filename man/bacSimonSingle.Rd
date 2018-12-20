@@ -2,10 +2,10 @@
 % Please edit documentation in R/RcppExports.R
 \name{bacSimonSingle}
 \alias{bacSimonSingle}
-\title{Simon's two-stage rules}
+\title{Single Simon 2-stage}
 \usage{
-bacSimonSingle(y, n1, r1, n, r, bsize)
+bacSimonSingle(cumu, n1, r1, n, r)
 }
 \description{
-Simon's two-stage rules
+Single Simon 2-stage
 }

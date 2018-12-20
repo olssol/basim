@@ -4,10 +4,10 @@
 \alias{baSimuBetaBin}
 \title{Simulate batch data from Beta-Binomial}
 \usage{
-baSimuBetaBin(batch.sizes, p, rho = 0, seed = NULL)
+baSimuBetaBin(bsize, p, rho = 0, seed = NULL, nreps = 1e+06)
 }
 \arguments{
-\item{batch.sizes}{number of subjects in each batch}
+\item{bsize}{batch size}
 
 \item{p}{mean of the Beta distribution a/(a+b)}
 

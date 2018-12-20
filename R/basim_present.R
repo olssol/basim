@@ -33,19 +33,15 @@ plot.ClsBaErr <- function(x, opts = NULL, pos.legend = c(0.8, 0.6)) {
 #'
 #' @export
 #'
-baPltTcell <- function(par.err, par.other, n.reps = 100000, pos.legend = c(0.8, 0.6),
+baPltTcell <- function(par.err, par.other, nreps = 100000, pos.legend = c(0.8, 0.6),
                        f.simu = baSimuTcell, fname = NULL, ...) {
 
-    error   <- baSimuBatchError(rep(1, n.reps),
-                                par.err);
+    error   <- baSimuBatchError(bsize = 1, par.err, nreps = nreps);
     errplot <- plot(error);
 
-    test.outcome <- f.simu(rep(1, n.reps),
-                           par.err    = par.err,
-                           par.other  = par.other);
-
-    dta.outcome <- rbind(data.frame(Outcome = "Y0", Y = test.outcome$y0),
-                         data.frame(Outcome = "Y1", Y = test.outcome$y1));
+    test.outcome <- f.simu(1, par.err= par.err, par.other = par.other, nreps = nreps);
+    dta.outcome  <- rbind(data.frame(Outcome = "Y0", Y = test.outcome$y0),
+                          data.frame(Outcome = "Y1", Y = test.outcome$y1));
 
     yplot <- ggplot(data = dta.outcome, aes(x = Y, fill = Outcome, col = Outcome)) +
         geom_histogram(aes(y = ..count../sum(..count..)),

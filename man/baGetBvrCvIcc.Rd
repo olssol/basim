@@ -4,8 +4,7 @@
 \alias{baGetBvrCvIcc}
 \title{Get CV, batch effect variance ratio and ICC}
 \usage{
-baGetBvrCvIcc(par.err, par.other, rates, n.reps = 1e+05,
-  f.simu = baSimuTcell, ...)
+baGetBvrCvIcc(par.err, par.other, rates, f.simu = baSimuTcell, ...)
 }
 \description{
 Get CV, batch effect variance ratio and ICC

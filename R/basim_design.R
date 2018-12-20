@@ -1,88 +1,53 @@
-#' Get designs
+#' Get designs for BetaBinomial designs
 #'
 #'
 #'
 #' @export
 #'
-baGetDesign  <- function(par.design, lst.setting = NULL, design = c("simon", "truth", "betabinom"),
-                         f.simu = baSimuTcell, rho = NULL, adj.rho = 1, bsize = 1,
-                         nmin = 10, nmax = 100, nreps = 10000, inx.design = NA, inx.setting = NA,
-                         ...) {
+baDesignBetaBin <- function(par.design, rho = 0, bsizes = 1, nmin = 10, nmax = 100, ...) {
 
-    f.dta <- function(rst, ...) {
-        data.frame(r1     = rst[1],
-                   n1     = rst[2],
-                   r      = rst[3],
-                   n      = rst[4],
-                   en     = rst[5],
-                   pet    = rst[6],
-                   dinx   = inx.design,
-                   sinx   = inx.setting,
-                   ...);
+    rho <- rep(rho, 2);
+    yp0 <- baSimuBetaBin(max(bsizes), p = par.design$P0, rho = rho[1], ...)$y;
+    yp1 <- baSimuBetaBin(max(bsizes), p = par.design$P1, rho = rho[2], ...)$y;
+
+    rst <- NULL;
+    for (i in 1:length(bsizes)) {
+        cur.rst        <- bacSimonDesign(yp0, yp1, nmax, nmin, bsizes[i],
+                                        par.design$ALPHA, 1 - par.design$POWER);
+        cur.rst        <- data.frame(cur.rst);
+        cur.rst$design <- c("Optimal", "Minimax");
+        cur.rst$bsize  <- bsizes[i];
+        rst            <- rbind(rst, cur.rst);
     }
 
-    design <- match.arg(design);
-    if ("simon" == design) {
-        rst <- ph2simon(pu  = par.design$P0,
-                        pa  = par.design$P1,
-                        ep1 = par.design$ALPHA,
-                        ep2 = 1 - par.design$POWER);
-        rst <- rst$out[which.min(rst$out[,5]),];
-        rst <- f.dta(rst,
-                     design = design,
-                     rhoadj = NA,
-                     rho0   = NA,
-                     rho1   = NA,
-                     bsize  = NA);
-
-    } else {
-        cur.icc <- lst.setting$icc;
-        bsizes  <- rep(bsize, ceiling(nmax/bsize)+2);
-
-        if ("betabinom" == design) {
-            if (is.null(rho)) {
-                rho0 <- adj.rho * cur.icc[which(par.design$P0 == cur.icc[,"rates"]), "icc"];
-                rho1 <- adj.rho * cur.icc[which(par.design$P1 == cur.icc[,"rates"]), "icc"];
-            } else {
-                rho0 <- rho[1];
-                rho1 <- rho[min(2, length(rho))];
-            }
-
-            yp0 <- sapply(1:nreps, function(x) baSimuBetaBin(bsizes, p = par.design$P0, rho = rho0)$y);
-            yp1 <- sapply(1:nreps, function(x) baSimuBetaBin(bsizes, p = par.design$P1, rho = rho1)$y);
-            yp0 <- t(yp0);
-            yp1 <- t(yp1);
-
-            rst <- bacSimonDesign(yp0, yp1, nmax, nmin, bsize, par.design$ALPHA, 1-par.design$POWER);
-            rst <- f.dta(rst[1,],
-                         design = design,
-                         rhoadj = adj.rho,
-                         rho0   = rho0,
-                         rho1   = rho1,
-                         bsize  = bsize);
-
-        } else if ("truth" == design) {
-            cut0 <- cur.icc[which(par.design$P0 == cur.icc[,"rates"]), "cuts"];
-            cut1 <- cur.icc[which(par.design$P1 == cur.icc[,"rates"]), "cuts"];
-            ys   <- sapply(1:nreps,
-                           function(x) f.simu(bsizes,
-                                              par.err = lst.setting$par.err,
-                                              par.other = lst.setting$par.other, ...)$y);
-
-            yp0 <- t(ys > cut0);
-            yp1 <- t(ys > cut1);
-            rst <- bacSimonDesign(yp0, yp1, nmax, nmin, bsize, par.design$ALPHA, 1-par.design$POWER);
-
-            rst <- f.dta(rst[1,],
-                         design = design,
-                         rhoadj = NA,
-                         rho0   = NA,
-                         rho1   = NA,
-                         bsize  = bsize);
-        }
-    }
-
-    rst <- cbind(rst, par.design);
-    row.names(rst) <- NULL;
+    rst$rho0  <- rho[1];
+    rst$rho1  <- rho[2];
+    rst$p0    <- par.design$P0;
+    rst$p1    <- par.design$P1;
+    rst$alpha <- par.design$ALPHA;
+    rst$beta  <- par.design$BETA;
     rst
 }
+
+#' Get type I error and power given y0, y1, n1, r1, n, r
+#'
+#'
+#'
+#' @export
+#'
+baGetRejRate <- function(yp0, yp1, n1, r1, nt, r, bsize = 1) {
+
+    stopifnot(ncol(yp0) >= bsize &
+              ncol(yp1) >= bsize);
+
+    cumu0 <- bacCumProb(yp0, nt, n1, bsize);
+    cumu1 <- bacCumProb(yp1, nt, n1, bsize);
+    cp0   <- bacSimonSingle(cumu0, n1, r1, nt, r);
+    cp1   <- bacSimonSingle(cumu1, n1, r1, nt, r);
+
+    c(type1 = cp0[3], power = cp1[3],
+      en0   = cp0[1], en1   = cp1[1],
+      pet0  = cp0[2], pet1  = cp1[2]);
+}
+
+

@@ -4,8 +4,8 @@
 \alias{baPltTcell}
 \title{Plot histogram of t-cells Y0 Y1 and Y1/Y0 for a given scenario}
 \usage{
-baPltTcell(par.err, par.other, n.reps = 1e+05, pos.legend = c(0.8,
-  0.6), f.simu = baSimuTcell, fname = NULL, ...)
+baPltTcell(par.err, par.other, nreps = 1e+05, pos.legend = c(0.8, 0.6),
+  f.simu = baSimuTcell, fname = NULL, ...)
 }
 \description{
 Plot histogram of t-cells Y0 Y1 and Y1/Y0 for a given scenario

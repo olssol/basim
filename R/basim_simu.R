@@ -1,34 +1,29 @@
 #' Simulate batch data from Beta-Binomial
 #'
-#' @param batch.sizes number of subjects in each batch
+#' @param bsize batch size
 #' @param p mean of the Beta distribution a/(a+b)
 #' @param rho inter-class correlation 1/(a+b+1)
 #'
 #' @return Simulated binary outcomes by batches
 #' @export
 #'
-baSimuBetaBin <- function(batch.sizes, p, rho = 0, seed = NULL) {
-
+baSimuBetaBin <- function(bsize, p, rho = 0, seed = NULL, nreps = 1000000) {
     if (!is.null(seed))
         set.seed(seed);
 
-    nbatch <- length(batch.sizes);
-
     if (0 == rho) {
-        bps <- rep(p, nbatch);
+        bps <- rep(p, nreps);
     } else {
         alpha  <- p * (1/rho - 1);
         beta   <- (1-p) * (1/rho - 1);
-        bps    <- rbeta(nbatch, alpha, beta);
+        bps    <- rbeta(nreps, alpha, beta);
     }
 
-    rst <- apply(cbind(batch.sizes, bps), 1,
-                 function(x) rbinom(x[1], size = 1, prob = x[2]));
+    rst      <- rbinom(bsize * nreps, size = 1, prob = bps);
+    dim(rst) <- c(nreps, bsize);
 
     ## return
-    list(y   = as.numeric(rst),
-         ind = baBatInd(batch.sizes),
-         ps  = bps);
+    list(y = rst, ps = bps);
 }
 
 
@@ -70,19 +65,19 @@ baSimuError <- function(n,
 #'
 #' @export
 #'
-baSimuBatchError <- function(batch.sizes,
+baSimuBatchError <- function(bsize,
                              par.err = list(gamma   = list(error.type = "normal", sig = 1),
                                             delta   = list(error.type = "normal", sig = 1),
-                                            epsilon = list(error.type = "normal", sig = 1))) {
+                                            epsilon = list(error.type = "normal", sig = 1)),
+                             nreps = 1000000) {
 
-    n.batch <- length(batch.sizes);
-    n.tot   <- sum(batch.sizes);
+    n.tot <- bsize * nreps;
 
     ## batch effects
     beffs <- NULL;
     for (ef in c("gamma", "delta")) {
         cur.par <- par.err[[ef]];
-        cur.eff <- do.call(baSimuError, c(n = n.batch, cur.par));
+        cur.eff <- do.call(baSimuError, c(n = nreps, cur.par));
         beffs   <- cbind(beffs, cur.eff);
     }
 
@@ -91,8 +86,7 @@ baSimuBatchError <- function(batch.sizes,
 
     rst <- list(gamma   = beffs[,1],
                 delta   = beffs[,2],
-                epsilon = epsilon,
-                bis     = baBatInd(batch.sizes));
+                epsilon = epsilon);
 
     class(rst) <- "ClsBaErr";
     rst;
@@ -104,9 +98,7 @@ baSimuBatchError <- function(batch.sizes,
 #'
 #' @export
 #'
-baSimuTcell <- function(batch.sizes, par.err, par.other, ...) {
-    ntot <- sum(batch.sizes);
-
+baSimuTcell <- function(bsize, par.err, par.other, nreps = 1000000, ...) {
     ## par.others
     u0   <- par.other["u0"];
     u1   <- par.other["u1"];
@@ -114,21 +106,23 @@ baSimuTcell <- function(batch.sizes, par.err, par.other, ...) {
     beta <- par.other["beta"];
 
     ## baseline error and oucome
-    err.base <- baSimuBatchError(batch.sizes, par.err = par.err);
-    u0.eps   <- u0 + err.base$epsilon;
-    log.mu0  <- u0.eps + err.base$gamma[err.base$bis];
-    log.phi0 <- v + err.base$delta[err.base$bis];
+    err.base <- baSimuBatchError(bsize = bsize, par.err = par.err, nreps = nreps);
+    u0.eps   <- u0     + err.base$epsilon;
+    log.mu0  <- u0.eps + rep(err.base$gamma, each = bsize);
+    log.phi0 <- v      + rep(err.base$delta, each = bsize);
     y0       <- baRNB(log.mu0, log.phi0);
 
     ## post treatment error and oucome
-    err.post <- baSimuBatchError(batch.sizes, par.err = par.err);
-    log.mu1  <- u1 + beta*u0.eps + err.post$gamma[err.post$bis] + err.post$epsilon;
-    log.phi1 <- v + err.post$delta[err.post$bis];
+    err.post <- baSimuBatchError(bsize = bsize, par.err = par.err, nreps = nreps);
+    log.mu1  <- u1 + beta*u0.eps + rep(err.post$gamma, each = bsize) + err.post$epsilon;
+    log.phi1 <- v  + rep(err.post$delta, each = bsize);
     y1       <- baRNB(log.mu1, log.phi1);
     ry       <- baGetOutcome(cbind(y0, y1), ...);
 
     ## return
-    rst <- list(y0 = y0, y1 = y1, y = ry);
+    rst <- list(y0 = matrix(y0, nrow = nreps, ncol = bsize, byrow = TRUE),
+                y1 = matrix(y1, nrow = nreps, ncol = bsize, byrow = TRUE),
+                y  = matrix(ry, nrow = nreps, ncol = bsize, byrow = TRUE));
 }
 
 #' Get cut off of the outcome to get given response rates
@@ -136,14 +130,13 @@ baSimuTcell <- function(batch.sizes, par.err, par.other, ...) {
 #'
 #' @export
 #'
-baGetCuts <- function(par.err, par.other, rates, n.reps = 100000,
-                      f.simu = baSimuTcell, ..., seed = NULL) {
+baGetCuts <- function(par.err, par.other, rates, f.simu = baSimuTcell, ..., seed = NULL) {
 
     if (!is.null(seed))
         set.seed(seed);
 
-    true.pts <- f.simu(rep(1, n.reps),
-                       par.err = par.err,
+    true.pts <- f.simu(bsize     = 1,
+                       par.err   = par.err,
                        par.other = par.other,
                        ...)$y;
 
@@ -160,13 +153,13 @@ baGetCuts <- function(par.err, par.other, rates, n.reps = 100000,
 #' @export
 #'
 #'
-baGetBvrCvIcc <- function(par.err, par.other, rates, n.reps = 100000, f.simu = baSimuTcell, ...) {
+baGetBvrCvIcc <- function(par.err, par.other, rates, f.simu = baSimuTcell, ...) {
     par.e2         <- par.err;
     par.e2$gamma   <- list(error.type = "normal", sig = 0);
     par.e2$delta   <- list(error.type = "normal", sig = 0);
 
-    cur.y.wb <- f.simu(rep(1, n.reps), par.err, par.other, ...);
-    cur.y.wo <- f.simu(rep(1, n.reps), par.e2,  par.other, ...);
+    cur.y.wb <- f.simu(bsize = 1, par.err, par.other, ...);
+    cur.y.wo <- f.simu(bsize = 1, par.e2,  par.other, ...);
 
     v.wb     <- var(cur.y.wb$y0, na.rm = TRUE);
     v.wo     <- var(cur.y.wo$y0, na.rm = TRUE);
@@ -175,11 +168,11 @@ baGetBvrCvIcc <- function(par.err, par.other, rates, n.reps = 100000, f.simu = b
 
     ## icc depends on the binary outcomes
     cuty     <- quantile(cur.y.wb$y, probs = 1 - rates);
-    y.wb.ba  <- f.simu(rep(10, n.reps), par.err, par.other, ...)$y;
+    y.wb.ba  <- f.simu(bsize = 10, par.err, par.other, ...)$y;
 
     icc <- NULL;
     for (i in 1:length(cuty)) {
-        icc <- c(icc, bacICC(y.wb.ba > cuty[i], rep(10, n.reps)));
+        icc <- c(icc, bacICC(y.wb.ba > cuty[i]));
     }
 
     list(par.err   = par.err,

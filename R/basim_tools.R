@@ -12,29 +12,6 @@ baBatInd <- function(batch.sizes) {
 }
 
 
-
-#' Get batch sizes to get the total n
-#'
-#'
-#' @export
-#'
-baBatches  <- function(n, bsize) {
-    nb  <- n %/% bsize;
-    nl  <- n %% bsize;
-
-    rst <- NULL;
-    if (nb > 0) {
-        rst <- rep(bsize, nb);
-    }
-
-    if (nl > 0) {
-        rst <- c(rst, nl);
-    }
-
-    rst
-}
-
-
 #' Define outcome based on longitudinal outcomes
 #'
 #'
@@ -66,4 +43,6 @@ baRNB <- function(mu, phi, n = NULL, is.log = TRUE) {
 
     rnbinom(n, size = phi, prob = phi/(mu + phi));
 }
+
+
 

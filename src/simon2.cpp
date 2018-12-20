@@ -7,7 +7,7 @@ using namespace Rcpp;
 //' Simon's two-stage rules 
 //' @export
 // [[Rcpp::export]]
-void bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize, NumericVector rst) {
+void bacSimonSingle0(NumericMatrix y, int n1, int r1, int n, int r, int bsize, NumericVector rst) {
 
   // NumericVector rst = NumericVector::create(_["nres"]  = 0.0,
   //                                           _["nenr"]  = 0.0,
@@ -50,9 +50,9 @@ void bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize, Nu
   //return(rst);
 }
 
-void tlSetVisOpt(int i, int j, NumericMatrix visited, NumericVector optimal,
-                 NumericMatrix y0, NumericMatrix y1, int n1, int n, int bsize,
-                 double alpha, double beta, NumericVector cp0, NumericVector cp1) {
+void tlSetVisOpt0(int i, int j, NumericMatrix visited, NumericVector optimal,
+                  NumericMatrix y0, NumericMatrix y1, int n1, int n, int bsize,
+                  double alpha, double beta, NumericVector cp0, NumericVector cp1) {
 
   if (1 == visited(i,j))
     return;
@@ -63,8 +63,8 @@ void tlSetVisOpt(int i, int j, NumericMatrix visited, NumericVector optimal,
   double        rej0, rej1;
   int           l, m;
 
-  bacSimonSingle(y0, n1, i, n, i+j, bsize, cp0);
-  bacSimonSingle(y1, n1, i, n, i+j, bsize, cp1);
+  bacSimonSingle0(y0, n1, i, n, i+j, bsize, cp0);
+  bacSimonSingle0(y1, n1, i, n, i+j, bsize, cp1);
   rej0 = round(cp0["rej"]*1000)/1000;
   rej1 = round(cp1["rej"]*1000)/1000;
 
@@ -101,7 +101,7 @@ void tlSetVisOpt(int i, int j, NumericMatrix visited, NumericVector optimal,
 //' Search r1 and r given n1 and n
 //' @export
 // [[Rcpp::export]]
-void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
+void bacSimonSearchR0(NumericMatrix y0, NumericMatrix y1, int n1, int n,
                      int bsize, double alpha, double beta, NumericVector optimal) {
 
   NumericVector cp0 = NumericVector::create(_["nres"]  = 0.0,
@@ -118,10 +118,10 @@ void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
   std::fill(visited.begin(), visited.end(), 0);
 
   for (k = 0; k < fmin(n1+1, n2+1); k = k+2) {
-    tlSetVisOpt(k,    k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
-    tlSetVisOpt(n1-k, n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
-    tlSetVisOpt(n1-k, k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
-    tlSetVisOpt(k,    n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt0(k,    k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt0(n1-k, n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt0(n1-k, k,    visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+    tlSetVisOpt0(k,    n2-k, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
   }
 
 
@@ -130,7 +130,7 @@ void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
   // all combinations
   for (i = n1; i >= 0; i--) {
     for (j = n2; j >= 0; j--) {
-      tlSetVisOpt(i, j, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
+      tlSetVisOpt0(i, j, visited, optimal, y0, y1, n1, n, bsize, alpha, beta, cp0, cp1);
     }
   }
 
@@ -141,7 +141,7 @@ void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n,
 //' Simon's two-stage design 
 //' @export
 // [[Rcpp::export]]
-NumericMatrix bacSimonDesign(NumericMatrix y0, NumericMatrix y1, int nmax, int nmin,
+NumericMatrix bacSimonDesign0(NumericMatrix y0, NumericMatrix y1, int nmax, int nmin,
                              int bsize, double alpha, double beta) {
 
   NumericMatrix rst(2, 8);
@@ -154,7 +154,7 @@ NumericMatrix bacSimonDesign(NumericMatrix y0, NumericMatrix y1, int nmax, int n
   for (n = nmin; n <= nmax; n = n+step) {
     Rcout << "n = " << n << "\n";
     for (n1 = 5; n1 < n-1; n1++) {
-      bacSimonSearchR(y0, y1, n1, n, bsize, alpha, beta, optimal);
+      bacSimonSearchR0(y0, y1, n1, n, bsize, alpha, beta, optimal);
 
       //accelerated n
       if (step > 1 & optimal[0] < 999999) {
@@ -186,51 +186,3 @@ NumericMatrix bacSimonDesign(NumericMatrix y0, NumericMatrix y1, int nmax, int n
   return(rst);
 }
 
-
-
-//' Get InterClass Correlation
-//' @export
-// [[Rcpp::export]]
-double bacICC(NumericVector ys, NumericVector bsizes) {
-    int    i, j, k;
-    double sumx, cor, vx;
-    double mu = 0, num = 0, denom = 0;
-    int    nbatch = bsizes.size(), cur;
-    double rst;
-
-    // get mu
-    cur = 0;
-    for (i = 0; i < nbatch; i++) {
-        sumx = 0;
-        for (j = 0; j < bsizes(i); j++) {
-            sumx += ys[cur + j];
-        }
-
-        mu  += sumx / bsizes(i);
-        cur += bsizes(i);
-    }
-    mu /= nbatch;
-
-    //get icc
-    cur = 0;
-    for (i = 0; i < nbatch; i++) {
-        vx  = 0;
-        for (j = 0; j < bsizes(i); j++) {
-            vx += pow(ys[cur+j]-mu, 2);
-        }
-        denom += vx / bsizes(i);
-
-        cor = 0;
-        for (j = 0; j < bsizes(i)-1; j++) {
-            for (k = j+1; k < bsizes(i); k++) {
-                cor += (ys[j+cur] - mu) * (ys[k+cur] - mu);
-            }
-        }
-
-        num += cor/bsizes(i)/(bsizes(i)-1)*2;
-        cur += bsizes(i);
-    }
-
-    rst = num/denom;
-    return(rst);
-}

@@ -5,37 +5,57 @@
 
 using namespace Rcpp;
 
-// bacSimonSingle
-void bacSimonSingle(NumericMatrix y, int n1, int r1, int n, int r, int bsize, NumericVector rst);
-RcppExport SEXP _basim_bacSimonSingle(SEXP ySEXP, SEXP n1SEXP, SEXP r1SEXP, SEXP nSEXP, SEXP rSEXP, SEXP bsizeSEXP, SEXP rstSEXP) {
+// bacBatchFreq
+NumericMatrix bacBatchFreq(NumericMatrix y);
+RcppExport SEXP _basim_bacBatchFreq(SEXP ySEXP) {
 BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(bacBatchFreq(y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bacProb
+NumericMatrix bacProb(int n, int bsize, NumericMatrix pmat);
+RcppExport SEXP _basim_bacProb(SEXP nSEXP, SEXP bsizeSEXP, SEXP pmatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type pmat(pmatSEXP);
+    rcpp_result_gen = Rcpp::wrap(bacProb(n, bsize, pmat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bacCumProb
+NumericMatrix bacCumProb(NumericMatrix y, int nmax, int nmin, int bsize);
+RcppExport SEXP _basim_bacCumProb(SEXP ySEXP, SEXP nmaxSEXP, SEXP nminSEXP, SEXP bsizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type y(ySEXP);
+    Rcpp::traits::input_parameter< int >::type nmax(nmaxSEXP);
+    Rcpp::traits::input_parameter< int >::type nmin(nminSEXP);
+    Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(bacCumProb(y, nmax, nmin, bsize));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bacSimonSingle
+NumericVector bacSimonSingle(NumericMatrix cumu, int n1, int r1, int n, int r);
+RcppExport SEXP _basim_bacSimonSingle(SEXP cumuSEXP, SEXP n1SEXP, SEXP r1SEXP, SEXP nSEXP, SEXP rSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type cumu(cumuSEXP);
     Rcpp::traits::input_parameter< int >::type n1(n1SEXP);
     Rcpp::traits::input_parameter< int >::type r1(r1SEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< int >::type r(rSEXP);
-    Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type rst(rstSEXP);
-    bacSimonSingle(y, n1, r1, n, r, bsize, rst);
-    return R_NilValue;
-END_RCPP
-}
-// bacSimonSearchR
-void bacSimonSearchR(NumericMatrix y0, NumericMatrix y1, int n1, int n, int bsize, double alpha, double beta, NumericVector optimal);
-RcppExport SEXP _basim_bacSimonSearchR(SEXP y0SEXP, SEXP y1SEXP, SEXP n1SEXP, SEXP nSEXP, SEXP bsizeSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP optimalSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type y0(y0SEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type y1(y1SEXP);
-    Rcpp::traits::input_parameter< int >::type n1(n1SEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type optimal(optimalSEXP);
-    bacSimonSearchR(y0, y1, n1, n, bsize, alpha, beta, optimal);
-    return R_NilValue;
+    rcpp_result_gen = Rcpp::wrap(bacSimonSingle(cumu, n1, r1, n, r));
+    return rcpp_result_gen;
 END_RCPP
 }
 // bacSimonDesign
@@ -56,23 +76,37 @@ BEGIN_RCPP
 END_RCPP
 }
 // bacICC
-double bacICC(NumericVector ys, NumericVector bsizes);
-RcppExport SEXP _basim_bacICC(SEXP ysSEXP, SEXP bsizesSEXP) {
+double bacICC(NumericMatrix ys);
+RcppExport SEXP _basim_bacICC(SEXP ysSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type ys(ysSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type bsizes(bsizesSEXP);
-    rcpp_result_gen = Rcpp::wrap(bacICC(ys, bsizes));
+    Rcpp::traits::input_parameter< NumericMatrix >::type ys(ysSEXP);
+    rcpp_result_gen = Rcpp::wrap(bacICC(ys));
+    return rcpp_result_gen;
+END_RCPP
+}
+// baBatches
+NumericVector baBatches(int n, int bsize);
+RcppExport SEXP _basim_baBatches(SEXP nSEXP, SEXP bsizeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
+    rcpp_result_gen = Rcpp::wrap(baBatches(n, bsize));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_basim_bacSimonSingle", (DL_FUNC) &_basim_bacSimonSingle, 7},
-    {"_basim_bacSimonSearchR", (DL_FUNC) &_basim_bacSimonSearchR, 8},
+    {"_basim_bacBatchFreq", (DL_FUNC) &_basim_bacBatchFreq, 1},
+    {"_basim_bacProb", (DL_FUNC) &_basim_bacProb, 3},
+    {"_basim_bacCumProb", (DL_FUNC) &_basim_bacCumProb, 4},
+    {"_basim_bacSimonSingle", (DL_FUNC) &_basim_bacSimonSingle, 5},
     {"_basim_bacSimonDesign", (DL_FUNC) &_basim_bacSimonDesign, 7},
-    {"_basim_bacICC", (DL_FUNC) &_basim_bacICC, 2},
+    {"_basim_bacICC", (DL_FUNC) &_basim_bacICC, 1},
+    {"_basim_baBatches", (DL_FUNC) &_basim_baBatches, 2},
     {NULL, NULL, 0}
 };
 

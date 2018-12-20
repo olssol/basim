@@ -4,7 +4,7 @@
 \alias{baSimuTcell}
 \title{Simulate t-cell counts using Negative binomial}
 \usage{
-baSimuTcell(batch.sizes, par.err, par.other, ...)
+baSimuTcell(bsize, par.err, par.other, nreps = 1e+06, ...)
 }
 \description{
 Simulate t-cell counts using Negative binomial
