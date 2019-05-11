@@ -83,11 +83,11 @@ baPltAllTcell <- function(lst.par, xlims = list(c(-1,1), c(0,2000), c(0,20)),
                 scale_y_continuous(limits = c(0, ylims[j]));
 
         lst.plt <- c(lst.plt, cur.plt);
-        labels  <- c(labels, paste(label, as.roman(i), sep = " "), "", "");
+        labels  <- c(labels, paste(label, as.roman(i), sep = " "),  "", "");
     }
 
     do.call(plot_grid, c(lst.plt,
                          nrow = length(lst.par),
-                         scale = 0.95, vjust = 1, label_size = 12,
+                         scale = 0.9, vjust = 1.1, hjust = -0.2, label_size = 12,
                          list(labels = labels)));
 }

@@ -1,4 +1,4 @@
-Package: basim  
+Package: basim
 Type: Package
 Title: Batch-Effect Adjusted Simon's Two-Stage Design
 Version: 1.0

@@ -5,7 +5,6 @@
 #' @export
 #'
 baDesignBetaBin <- function(par.design, rho = 0, bsizes = 1, nmin = 10, nmax = 100, ...) {
-
     rho <- rep(rho, 2);
     yp0 <- baSimuBetaBin(max(bsizes), p = par.design$P0, rho = rho[1], ...)$y;
     yp1 <- baSimuBetaBin(max(bsizes), p = par.design$P1, rho = rho[2], ...)$y;
@@ -49,5 +48,20 @@ baGetRejRate <- function(yp0, yp1, n1, r1, nt, r, bsize = 1) {
       en0   = cp0[1], en1   = cp1[1],
       pet0  = cp0[2], pet1  = cp1[2]);
 }
+
+
+## #' Get actuarial type I and II error in Sargent's method
+## baSaAlphaBeta <- function(bsizes, r, p0, p1, rho = 0) {
+##     v0    <- baSaGetVar(bsizes, p0, rho);
+##     v1    <- baSaGetVar(bsizes, p1, rho);
+##     n     <- sum(bsizes);
+##     m0    <- n * p0;
+##     m1    <- n * p1;
+
+##     alpha <- 1 - pnorm( (r + 1.5 - m0)/sqrt(v0) );
+##     beta  <- pnorm( (r + 1.5 - m1)/sqrt(v1) );
+
+##     c(alpha, beta);
+## }
 
 

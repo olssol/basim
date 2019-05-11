@@ -98,6 +98,53 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// baSaGetVar
+double baSaGetVar(NumericVector bsizes, double p, double rho);
+RcppExport SEXP _basim_baSaGetVar(SEXP bsizesSEXP, SEXP pSEXP, SEXP rhoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type bsizes(bsizesSEXP);
+    Rcpp::traits::input_parameter< double >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type rho(rhoSEXP);
+    rcpp_result_gen = Rcpp::wrap(baSaGetVar(bsizes, p, rho));
+    return rcpp_result_gen;
+END_RCPP
+}
+// baSaAlphaBeta
+NumericVector baSaAlphaBeta(NumericVector bsizes, int r, double p0, double p1, double rho0, double rho1);
+RcppExport SEXP _basim_baSaAlphaBeta(SEXP bsizesSEXP, SEXP rSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP rho0SEXP, SEXP rho1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type bsizes(bsizesSEXP);
+    Rcpp::traits::input_parameter< int >::type r(rSEXP);
+    Rcpp::traits::input_parameter< double >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< double >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< double >::type rho0(rho0SEXP);
+    Rcpp::traits::input_parameter< double >::type rho1(rho1SEXP);
+    rcpp_result_gen = Rcpp::wrap(baSaAlphaBeta(bsizes, r, p0, p1, rho0, rho1));
+    return rcpp_result_gen;
+END_RCPP
+}
+// baSaDesign
+NumericVector baSaDesign(int nmin, int bsize, double alpha, double beta, double p0, double p1, double rho0, double rho1);
+RcppExport SEXP _basim_baSaDesign(SEXP nminSEXP, SEXP bsizeSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP p0SEXP, SEXP p1SEXP, SEXP rho0SEXP, SEXP rho1SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type nmin(nminSEXP);
+    Rcpp::traits::input_parameter< int >::type bsize(bsizeSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< double >::type p0(p0SEXP);
+    Rcpp::traits::input_parameter< double >::type p1(p1SEXP);
+    Rcpp::traits::input_parameter< double >::type rho0(rho0SEXP);
+    Rcpp::traits::input_parameter< double >::type rho1(rho1SEXP);
+    rcpp_result_gen = Rcpp::wrap(baSaDesign(nmin, bsize, alpha, beta, p0, p1, rho0, rho1));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_basim_bacBatchFreq", (DL_FUNC) &_basim_bacBatchFreq, 1},
@@ -107,6 +154,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_basim_bacSimonDesign", (DL_FUNC) &_basim_bacSimonDesign, 7},
     {"_basim_bacICC", (DL_FUNC) &_basim_bacICC, 1},
     {"_basim_baBatches", (DL_FUNC) &_basim_baBatches, 2},
+    {"_basim_baSaGetVar", (DL_FUNC) &_basim_baSaGetVar, 3},
+    {"_basim_baSaAlphaBeta", (DL_FUNC) &_basim_baSaAlphaBeta, 6},
+    {"_basim_baSaDesign", (DL_FUNC) &_basim_baSaDesign, 8},
     {NULL, NULL, 0}
 };
 

@@ -4,7 +4,7 @@
 \alias{baGetRejRate}
 \title{Get type I error and power given y0, y1, n1, r1, n, r}
 \usage{
-baGetRejRate(yp0, yp1, n1, r1, n, r, bsize = 1)
+baGetRejRate(yp0, yp1, n1, r1, nt, r, bsize = 1)
 }
 \description{
 Get type I error and power given y0, y1, n1, r1, n, r

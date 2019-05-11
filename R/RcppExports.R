@@ -45,3 +45,21 @@ baBatches <- function(n, bsize) {
     .Call(`_basim_baBatches`, n, bsize)
 }
 
+#' Get variance given batch sizes, response rate and ICC
+#'  @export
+baSaGetVar <- function(bsizes, p, rho) {
+    .Call(`_basim_baSaGetVar`, bsizes, p, rho)
+}
+
+#' Get actuarial type I and II error in Sargent method
+#' @export
+baSaAlphaBeta <- function(bsizes, r, p0, p1, rho0, rho1) {
+    .Call(`_basim_baSaAlphaBeta`, bsizes, r, p0, p1, rho0, rho1)
+}
+
+#' Get Design type I and II error using Sargent method
+#' @export
+baSaDesign <- function(nmin, bsize, alpha, beta, p0, p1, rho0, rho1) {
+    .Call(`_basim_baSaDesign`, nmin, bsize, alpha, beta, p0, p1, rho0, rho1)
+}
+
