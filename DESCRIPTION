@@ -1,8 +1,8 @@
 Package: basim
 Type: Package
 Title: Batch-Effect Adjusted Simon's Two-Stage Design
-Version: 1.0
-Date: 2018-11-19
+Version: 1.2
+Date: 2019-6-7
 Author: Chenguang Wang
 Maintainer: Chenguaang <cwang68@jhmi.edu>
 Description: One paragraph description of what the package does as one

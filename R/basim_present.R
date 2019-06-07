@@ -34,7 +34,7 @@ plot.ClsBaErr <- function(x, opts = NULL, pos.legend = c(0.8, 0.6)) {
 #' @export
 #'
 baPltTcell <- function(par.err, par.other, nreps = 100000, pos.legend = c(0.8, 0.6),
-                       f.simu = baSimuTcell, fname = NULL, ...) {
+                       f.simu = baSimuTcell, fname = NULL, ..., ry.quants = c(0.1,0.5,0.9)) {
 
     error   <- baSimuBatchError(bsize = 1, par.err, nreps = nreps);
     errplot <- plot(error);
@@ -55,6 +55,12 @@ baPltTcell <- function(par.err, par.other, nreps = 100000, pos.legend = c(0.8, 0
         geom_density(na.rm = TRUE) +
         labs(x = "Proliferation Index", y = "Density") +
         theme_bw();
+
+    for (qu in ry.quants) {
+        cur.q <- quantile(test.outcome$y, qu);
+        ryplot <- ryplot + geom_vline(xintercept = cur.q, linetype = 2, col = "red");
+    }
+
 
     if (!is.null(fname)) {
         rst <- plot_grid(errplot, yplot, ryplot, nrow=1);
